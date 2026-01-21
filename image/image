@@ -1,0 +1,28 @@
+┌─────────────────┐
+│  Food Image     │
+│   (128×128)     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  CNN ENCODER    │  ← Extracts visual features
+│   (ResNet18)    │     "What's in the image?"
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Feature Vector │  ← Compressed representation
+│   (256 values)  │     of the image
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ TRANSFORMER     │  ← Generates recipe word by word
+│  DECODER        │     using the visual features
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Recipe Text    │
+│  "mix flour..." │
+└─────────────────┘
