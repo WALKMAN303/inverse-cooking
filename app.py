@@ -407,12 +407,6 @@ def main():
             recipe = st.session_state.recipe
             formatted_recipe = format_recipe(recipe)
             
-            # Display recipe in a nice box
-            st.markdown(
-                f'<div class="recipe-box"><h3>Instructions:</h3><p>{formatted_recipe}</p></div>',
-                unsafe_allow_html=True
-            )
-            
             # Action buttons
             col_a, col_b = st.columns(2)
             
