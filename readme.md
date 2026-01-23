@@ -313,7 +313,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Your Name**
 - GitHub: [@WALKMAN303](https://github.com/WALKMAN303)
-- LinkedIn: [Your Name](https://linkedin.com/in/arjun-k-r-)
+- LinkedIn: [Arjun K R](https://linkedin.com/in/arjun-k-r-)
 ---
 
 ## 📞 Contact
