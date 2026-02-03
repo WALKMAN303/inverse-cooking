@@ -136,7 +136,7 @@ Download the following files and place them in the project root directory:
 inverse-cooking/
 ├── best_model.pth                ✅
 ├── vocab.pkl                     ✅
-├── inverse-cooking.ipynb
+├── inverse-cooking.py
 ├── download_models.py
 ├── requirements.txt
 ├── README.md
@@ -153,7 +153,7 @@ jupyter notebook inverse-cooking.ipynb
 python train.py --epochs 15 --batch-size 32 --lr 3e-4
 ```
 
-Training takes approximately 1 hours on Tesla T4 GPU and use kaggle or colab for T4 GPU.
+Training takes approximately 1 hour on Tesla T4 GPU and use kaggle or colab for the T4 GPU.
 
 ---
 
@@ -192,8 +192,8 @@ print(recipe)
 
 ### Sample Predictions
 
-**Example : Pizza**
-- **Generated**: "preheat oven to 450 degrees roll out pizza dough spread tomato sauce add mozzarella cheese top with pepperoni bake for 15 minutes until cheese is melted and bubbly"
+**Example: Pizza**
+- **Generated**: "preheat oven to 450 degrees, roll out pizza dough spread tomato sauce add mozzarella cheese top with pepperoni bake for 15 minutes until cheese is melted and bubbly."
 - **Quality**: Coherent, logical sequence ✅
 
 ---
@@ -239,7 +239,7 @@ Trainable Parameters: 7,042,815
 
 ```
 inverse-cooking/
-├── inverse-cooking.ipynb      # Main training notebook
+├── inverse-cooking.py      # Main training notebook
 ├── model.py                   # Model architecture
 ├── download_models.py         # Script to download pre-trained models
 ├── requirements.txt           # Python dependencies
@@ -321,9 +321,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Have questions or suggestions? Feel free to:
 - Open an issue
 - Reach out on LinkedIn
-
----
-
-<div align="center">
-  <sub>Built with ❤️ using PyTorch</sub>
-</div>
