@@ -97,17 +97,18 @@ cd inverse-cooking
 pip install -r requirements.txt
 ```
 
-3. **Download pre-trained models** (See [Model Files](#-model-files) section below)
+3. **Set up your environment variables**
 ```bash
-python download_model.py
+# Create a .env file with your Hugging Face token
+echo HF_TOKEN=your_huggingface_token_here > .env
 ```
 
 4. **Run the web app**
 ```bash
-streamlit run app.py
+streamlit run ui/main_app.py
 ```
 
-That's it! You're ready to generate recipes from food images! 🎉
+Both the **Home** (dish recognition & Swiggy ordering) and **Chef Portal** (recipe management) are accessible via the sidebar navigation in a single running app.
 
 ---
 
@@ -233,13 +234,30 @@ Trainable Parameters: 7,042,815
 
 ```
 inverse-cooking/
-├── app.py                     # Streamlit web application
-├── inverse-cooking.py         # Main training script
-├── download_model.py          # Script to download pre-trained models
-├── requirements.txt           # Python dependencies
-├── best_model.pth             # Trained model weights (download required)
-├── vocab.pkl                  # Vocabulary object (download required)
-└── README.md                  # This file
+├── app/
+│   ├── core/
+│   │   └── config.py              # Environment variables, paths, model IDs
+│   ├── services/
+│   │   ├── swiggy_auth.py         # OAuth 2.1 + PKCE authentication
+│   │   ├── swiggy_service.py      # Swiggy MCP ordering flow
+│   │   ├── vision_service.py      # Qwen Vision AI (dish identification)
+│   │   └── matcher_service.py     # Fuzzy match against chef recipes
+│   ├── storage/
+│   │   └── recipe_repo.py         # JSON persistence for chef recipes
+│   ├── api/v1/
+│   │   └── recipes.py             # FastAPI REST endpoints
+│   ├── schemas/
+│   │   └── recipe.py              # Pydantic request/response models
+│   └── main.py                    # FastAPI server entry point
+├── ui/
+│   ├── main_app.py                # Streamlit home page (upload → identify → order)
+│   └── pages/
+│       └── 1_Chef_Portal.py       # Chef recipe management page
+├── data/
+│   └── recipes.json               # Chef-uploaded verified recipes
+├── .env                           # HF_TOKEN (gitignored)
+├── requirements.txt               # Python dependencies
+└── readme.md                      # This file
 ```
 
 ---

@@ -1,0 +1,98 @@
+{
+  "punjabi dhaba::butter chicken": {
+    "chef": "Chef Sanjeev",
+    "restaurant": "Punjabi Dhaba",
+    "dish_name": "Butter Chicken",
+    "cuisine": "North Indian",
+    "description": "Rich, creamy tomato gravy with succulent grilled chicken bites.",
+    "base_price": 380,
+    "ingredients": [
+      "500g Chicken (boneless)",
+      "200ml Heavy Cream",
+      "100g Butter",
+      "2 cups Tomato Puree",
+      "2 tbsp Ginger-Garlic Paste",
+      "1 tbsp Garam Masala"
+    ],
+    "steps": [
+      "Marinate chicken in yogurt and spices for 2 hours.",
+      "Grill or sear chicken in butter until charred.",
+      "Prepare tomato gravy with butter, cream, and garam masala.",
+      "Simmer chicken in gravy for 15 minutes and serve hot with Naan."
+    ],
+    "premium_add_ons": [
+      {
+        "name": "Extra Cream Drizzle",
+        "price": 30
+      },
+      {
+        "name": "Garlic Naan (2 pcs)",
+        "price": 80
+      }
+    ],
+    "consent": true,
+    "created_at": "2026-08-01T22:45:00"
+  },
+  "royal spice::paneer butter masala": {
+    "chef": "Chef Ranveer",
+    "restaurant": "Royal Spice",
+    "dish_name": "Paneer Butter Masala",
+    "cuisine": "North Indian",
+    "description": "Soft cottage cheese cubes in a mildly sweet, buttery tomato gravy.",
+    "base_price": 320,
+    "ingredients": [
+      "300g Fresh Paneer cubes",
+      "150ml Fresh Cream",
+      "50g Butter",
+      "2 cups Tomato Cashew Paste",
+      "1 tbsp Kasuri Methi"
+    ],
+    "steps": [
+      "Sauté tomato and cashew paste in butter until oil separates.",
+      "Add cream, spices, and kasuri methi to make a smooth gravy.",
+      "Add fresh paneer cubes and simmer gently for 5 minutes.",
+      "Garnish with coriander and butter."
+    ],
+    "premium_add_ons": [
+      {
+        "name": "Extra Butter Topping",
+        "price": 25
+      }
+    ],
+    "consent": true,
+    "created_at": "2026-08-01T22:45:00"
+  },
+  "pizzeria roma::margherita pizza": {
+    "chef": "Chef Marco",
+    "restaurant": "Pizzeria Roma",
+    "dish_name": "Margherita Pizza",
+    "cuisine": "Italian",
+    "description": "Classic Neapolitan pizza with fresh mozzarella, basil, and San Marzano tomato sauce.",
+    "base_price": 450,
+    "ingredients": [
+      "1 Fresh Pizza Dough base",
+      "150g Fresh Mozzarella",
+      "100ml San Marzano Tomato Sauce",
+      "Fresh Basil leaves",
+      "Extra Virgin Olive Oil"
+    ],
+    "steps": [
+      "Stretch dough into 12-inch round base.",
+      "Spread tomato sauce evenly leaving crust borders.",
+      "Top with torn fresh mozzarella and basil leaves.",
+      "Bake in wood-fired oven at 450°C for 90 seconds until crust is charred."
+    ],
+    "premium_add_ons": [
+      {
+        "name": "Truffle Oil Drizzle",
+        "price": 100
+      },
+      {
+        "name": "Burrata Cheese Topping",
+        "price": 150
+      }
+    ],
+    "consent": true,
+    "created_at": "2026-08-01T22:45:00"
+  }
+}
