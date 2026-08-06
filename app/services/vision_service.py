@@ -49,12 +49,24 @@ class VisionService:
             }
         ]
         
-        response = self._client.chat.completions.create(
-            model=self.model_id,
-            messages=messages,
-            max_tokens=800
-        )
-        return response.choices[0].message.content
+        try:
+            response = self._client.chat.completions.create(
+                model=self.model_id,
+                messages=messages,
+                max_tokens=800
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            fallback_model = "Qwen/Qwen2.5-VL-72B-Instruct"
+            if self.model_id != fallback_model:
+                print(f"Primary model {self.model_id} failed ({e}). Retrying with fallback model {fallback_model}...")
+                response = self._client.chat.completions.create(
+                    model=fallback_model,
+                    messages=messages,
+                    max_tokens=800
+                )
+                return response.choices[0].message.content
+            raise e
 
     def parse_qwen_json(self, raw_text: str) -> Dict[str, Any]:
         """Safely parse Qwen Vision JSON response, removing potential markdown code fences."""

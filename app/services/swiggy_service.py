@@ -22,7 +22,8 @@ import asyncio
 from difflib import SequenceMatcher
 
 from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.streamable_http import streamable_http_client
+from mcp.shared._httpx_utils import create_mcp_http_client
 
 from app.services.swiggy_auth import get_valid_token
 
@@ -73,77 +74,78 @@ async def place_customized_order(dish_name: str, restaurant_name: str,
     token = get_valid_token()
     headers = {"Authorization": f"Bearer {token}"}
 
-    async with streamablehttp_client(SWIGGY_FOOD_SERVER, headers=headers) as (read, write, _):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
+    async with create_mcp_http_client(headers=headers) as http_client:
+        async with streamable_http_client(SWIGGY_FOOD_SERVER, http_client=http_client) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
 
-            # Step 1 — resolve address
-            addresses = await session.call_tool("get_addresses", {})
-            addr_list = addresses.data
-            if not addr_list:
-                raise SwiggyOrderError("No saved Swiggy address found. Add one in the Swiggy app first.")
-            home = next((a for a in addr_list if a.get("label") == "Home"), addr_list[0])
+                # Step 1 — resolve address
+                addresses = await session.call_tool("get_addresses", {})
+                addr_list = addresses.data
+                if not addr_list:
+                    raise SwiggyOrderError("No saved Swiggy address found. Add one in the Swiggy app first.")
+                home = next((a for a in addr_list if a.get("label") == "Home"), addr_list[0])
 
-            # Step 2 — find the restaurant
-            search = await session.call_tool("search_restaurants", {
-                "addressId": home["id"], "query": restaurant_name
-            })
-            candidates = [r for r in search.data.get("restaurants", [])
-                          if r.get("availabilityStatus") == "OPEN"]
-            if not candidates:
-                raise SwiggyOrderError(f"'{restaurant_name}' isn't open on Swiggy right now.")
-            restaurant = candidates[0]
+                # Step 2 — find the restaurant
+                search = await session.call_tool("search_restaurants", {
+                    "addressId": home["id"], "query": restaurant_name
+                })
+                candidates = [r for r in search.data.get("restaurants", [])
+                              if r.get("availabilityStatus") == "OPEN"]
+                if not candidates:
+                    raise SwiggyOrderError(f"'{restaurant_name}' isn't open on Swiggy right now.")
+                restaurant = candidates[0]
 
-            # Step 3 — browse menu, find the dish
-            menu_search = await session.call_tool("search_menu", {
-                "restaurantId": restaurant["id"], "query": dish_name
-            })
-            items = menu_search.data.get("items", [])
-            if not items:
-                raise SwiggyOrderError(f"Couldn't find '{dish_name}' on {restaurant_name}'s current Swiggy menu.")
-            dish_item = items[0]
+                # Step 3 — browse menu, find the dish
+                menu_search = await session.call_tool("search_menu", {
+                    "restaurantId": restaurant["id"], "query": dish_name
+                })
+                items = menu_search.data.get("items", [])
+                if not items:
+                    raise SwiggyOrderError(f"Couldn't find '{dish_name}' on {restaurant_name}'s current Swiggy menu.")
+                dish_item = items[0]
 
-            # Match premium ingredients to real menu add-ons
-            matched_addons = []
-            unmatched = []
-            for ingredient in premium_ingredients:
-                addon = await find_best_addon_match(session, restaurant["id"], ingredient)
-                if addon:
-                    matched_addons.append(addon)
-                else:
-                    unmatched.append(ingredient)
+                # Match premium ingredients to real menu add-ons
+                matched_addons = []
+                unmatched = []
+                for ingredient in premium_ingredients:
+                    addon = await find_best_addon_match(session, restaurant["id"], ingredient)
+                    if addon:
+                        matched_addons.append(addon)
+                    else:
+                        unmatched.append(ingredient)
 
-            # Step 4 — build the cart
-            cart_item = {"itemId": dish_item["id"], "quantity": 1}
-            if matched_addons:
-                cart_item["addOns"] = [a["id"] for a in matched_addons]
+                # Step 4 — build the cart
+                cart_item = {"itemId": dish_item["id"], "quantity": 1}
+                if matched_addons:
+                    cart_item["addOns"] = [a["id"] for a in matched_addons]
 
-            await session.call_tool("update_food_cart", {
-                "restaurantId": restaurant["id"],
-                "items": [cart_item],
-            })
+                await session.call_tool("update_food_cart", {
+                    "restaurantId": restaurant["id"],
+                    "items": [cart_item],
+                })
 
-            # Step 5 — confirm total against the ₹1000 cap
-            cart = await session.call_tool("get_food_cart", {})
-            total = cart.data.get("total", 0)
-            if total > CART_CAP_INR:
-                raise SwiggyOrderError(
-                    f"Cart total ₹{total} exceeds the ₹{CART_CAP_INR} Builders Club cap. "
-                    "Remove an add-on and try again."
-                )
+                # Step 5 — confirm total against the ₹1000 cap
+                cart = await session.call_tool("get_food_cart", {})
+                total = cart.data.get("total", 0)
+                if total > CART_CAP_INR:
+                    raise SwiggyOrderError(
+                        f"Cart total ₹{total} exceeds the ₹{CART_CAP_INR} Builders Club cap. "
+                        "Remove an add-on and try again."
+                    )
 
-            # Step 6 — place the order (NOT idempotent — call once)
-            order = await session.call_tool("place_food_order", {"paymentMethod": "COD"})
+                # Step 6 — place the order (NOT idempotent — call once)
+                order = await session.call_tool("place_food_order", {"paymentMethod": "COD"})
 
-            return {
-                "order_id": order.data.get("orderId"),
-                "restaurant": restaurant["name"],
-                "dish": dish_item["name"],
-                "matched_add_ons": [a["name"] for a in matched_addons],
-                "unmatched_ingredients": unmatched,
-                "total": total,
-                "payment": "COD",
-            }
+                return {
+                    "order_id": order.data.get("orderId"),
+                    "restaurant": restaurant["name"],
+                    "dish": dish_item["name"],
+                    "matched_add_ons": [a["name"] for a in matched_addons],
+                    "unmatched_ingredients": unmatched,
+                    "total": total,
+                    "payment": "COD",
+                }
 
 
 def place_customized_order_sync(dish_name: str, restaurant_name: str,

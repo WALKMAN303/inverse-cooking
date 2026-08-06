@@ -19,13 +19,13 @@ from app.storage.recipe_repo import recipe_repo, RecipeRepository
 
 
 def main():
-    st.set_page_config(page_title="Chef Recipe Portal", page_icon="👨‍🍳", layout="wide")
-    st.title("👨‍🍳 Chef Recipe Portal")
+    st.set_page_config(page_title="Chef Recipe Portal", layout="wide")
+    st.title("Chef Recipe Portal")
     st.caption("Upload your dish's verified recipe. You control whether customers can order it.")
 
     recipes = recipe_repo.load_recipes()
 
-    tab_upload, tab_manage = st.tabs(["📤 Upload new recipe", "📋 Manage my recipes"])
+    tab_upload, tab_manage = st.tabs(["Upload new recipe", "Manage my recipes"])
 
     # ── UPLOAD TAB ──
     with tab_upload:
@@ -66,11 +66,11 @@ def main():
 
             st.markdown("---")
             consent = st.checkbox(
-                "✅ I consent to this recipe being shown to customers and ordered via Swiggy with a premium fee",
+                "I consent to this recipe being shown to customers and ordered via Swiggy with a premium fee",
                 value=False
             )
 
-            submitted = st.form_submit_button("Save recipe", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("Save recipe", type="primary", width="stretch")
 
             if submitted:
                 if not (chef_name and restaurant and dish_name and base_price):
@@ -104,7 +104,7 @@ def main():
                         "created_at": datetime.now().isoformat(),
                     }
                     recipe_repo.save_recipes(recipes)
-                    st.success(f"✅ Recipe for '{dish_name}' saved! Consent: {'Yes' if consent else 'No — hidden from customers'}")
+                    st.success(f"Recipe for '{dish_name}' saved! Consent: {'Yes' if consent else 'No — hidden from customers'}")
 
     # ── MANAGE TAB ──
     with tab_manage:
@@ -112,7 +112,7 @@ def main():
             st.info("No recipes uploaded yet.")
         else:
             for rid, r in recipes.items():
-                with st.expander(f"{r['dish_name']} — {r['restaurant']} ({'✅ consented' if r['consent'] else '🚫 not visible'})"):
+                with st.expander(f"{r['dish_name']} — {r['restaurant']} ({'consented' if r['consent'] else 'not visible'})"):
                     st.write(f"**Chef:** {r['chef']}  |  **Cuisine:** {r.get('cuisine', '—')}  |  **Base price:** ₹{r['base_price']}")
                     st.write(f"**Ingredients:** {', '.join(r['ingredients'])}")
                     st.write("**Steps:**")
@@ -130,7 +130,7 @@ def main():
                             recipe_repo.save_recipes(recipes)
                             st.rerun()
                     with col_b:
-                        if st.button("🗑️ Delete recipe", key=f"del_{rid}"):
+                        if st.button("Delete recipe", key=f"del_{rid}"):
                             del recipes[rid]
                             recipe_repo.save_recipes(recipes)
                             st.rerun()

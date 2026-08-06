@@ -138,7 +138,7 @@ def main():
         }
         .sub-title {
             font-size: 1.1rem;
-            color: #4A5568;
+            color: #94A3B8;
             margin-bottom: 1.8rem;
         }
         .chef-badge {
@@ -160,12 +160,25 @@ def main():
             margin-bottom: 10px;
         }
         .card-box {
-            background-color: #FFFFFF;
+            background-color: #1E293B;
+            color: #F8FAFC;
             padding: 20px;
             border-radius: 12px;
-            border: 1px solid #E2E8F0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+        }
+        .card-box h4 {
+            color: #F8FAFC !important;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        .card-box p {
+            color: #CBD5E1 !important;
+            margin-bottom: 4px;
+        }
+        .card-box b {
+            color: #FFFFFF !important;
         }
         </style>
     """, unsafe_allow_html=True)

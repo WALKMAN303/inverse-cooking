@@ -1,276 +1,195 @@
-# 🍽️ Inverse Cooking: Recipe Generation from Food Images
-> A deep learning project that generates cooking recipes from food images using CNN and Transformer architecture.
+# Inverse Cooking: Vision-Language Dish Recognition & Swiggy MCP Ordering
+
+> An industrial culinary intelligence application that identifies dishes from food images using Vision-Language AI (Qwen2.5-VL-7B), matches verified chef recipes, and automates food ordering via the Swiggy Model Context Protocol (MCP).
 
 ---
 
-## 📖 Overview
+## Overview
 
-This project implements an **image-to-text generation model** that can look at a food image and generate step-by-step cooking instructions. Built with PyTorch, it combines a CNN encoder (ResNet18) for visual feature extraction and a Transformer decoder for sequential text generation.
-
-### Key Features
-- 🖼️ **Image Understanding**: Uses pre-trained ResNet18 to extract visual features
-- 📝 **Recipe Generation**: Transformer decoder generates coherent cooking instructions
-- 🎯 **End-to-End Training**: Single pipeline from image input to text output
-- 📊 **13,463 Recipes**: Trained on diverse food dataset with real recipes
-- ⚡ **GPU Optimized**: Efficient training with CUDA support
+**Inverse Cooking** bridges visual food recognition with automated culinary ordering:
+1. **Vision-Language Analysis**: Upload any food photo. The system uses **Qwen2.5-VL-7B-Instruct** (via Hugging Face Inference API) to recognize the dish, cuisine type, confidence level, and visible ingredients.
+2. **Verified Chef Recipe Matcher**: Uses fuzzy string similarity (`SequenceMatcher`) to match the recognized dish against verified chef recipes in `data/recipes.json`.
+3. **AI Fallback Recipe**: If no verified chef recipe is found, the system generates step-by-step cooking instructions using Qwen AI.
+4. **Swiggy MCP Integration**: Automates food ordering via Swiggy's 7-tool Model Context Protocol with OAuth 2.1 + PKCE authentication and intelligent menu add-on matching.
+5. **Multipage Streamlit Web Application**: Unified UI for both consumers (Dish Recognition & Ordering) and chefs (Recipe Upload & Consent Management).
 
 ---
 
-## 🎯 Problem Statement
-
-**Challenge**: Given an image of a finished dish, automatically generate the cooking recipe.
-
-**Why It Matters**:
-- Helps home cooks recreate dishes they see
-- Assists people with dietary restrictions in understanding ingredients
-- Educational tool for culinary students
-- Accessibility feature for recipe discovery
-
----
-
-## 🗃️ Architecture
-
-### Model Design
+## System Architecture
 
 ```
-Input Image (128×128×3)
-         ↓
-    CNN Encoder (ResNet18)
-         ↓
-    Feature Vector (256)
-         ↓
-  Transformer Decoder (2 layers, 4 heads)
-         ↓
-    Recipe Text Output
-```
-
-### Components
-
-1. **CNN Encoder**
-   - Pre-trained ResNet18 (ImageNet weights)
-   - Fine-tuned last layer
-   - Output: 256-dimensional feature vector
-
-2. **Transformer Decoder**
-   - 2 decoder layers
-   - 4 attention heads
-   - Embedding dimension: 256
-   - Vocabulary size: 8,215 words
-   - Max sequence length: 512 tokens
-
-3. **Training Strategy**
-   - Teacher forcing during training
-   - Auto-regressive generation during inference
-   - Cross-entropy loss
-   - AdamW optimizer with learning rate scheduling
-
----
-
-## 📊 Dataset
-
-- **Source**: [Food Ingredients and Recipe Dataset](https://www.kaggle.com/datasets/pes12017000148/food-ingredients-and-recipe-dataset-with-images)
-- **Total Recipes**: 13,463
-- **Train/Val Split**: 80/20
-- **Image Size**: 128×128 RGB
-- **Data Augmentation**: Random crop, horizontal flip, color jitter
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-```bash
-Python 3.8+
-CUDA 11.0+ (for GPU support)
-```
-
-### Quick Start
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/WALKMAN303/inverse-cooking.git
-cd inverse-cooking
-```
-
-2. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-3. **Set up your environment variables**
-```bash
-# Create a .env file with your Hugging Face token
-echo HF_TOKEN=your_huggingface_token_here > .env
-```
-
-4. **Run the web app**
-```bash
-streamlit run ui/main_app.py
-```
-
-Both the **Home** (dish recognition & Swiggy ordering) and **Chef Portal** (recipe management) are accessible via the sidebar navigation in a single running app.
-
----
-
-## 📦 Model Files
-
-> **Note**: Due to GitHub's file size limitations (100 MB max), the pre-trained model weights are hosted on Google Drive.
-
-### Download Pre-trained Models
-
-**Option 1: Automatic Download (Recommended)**
-```bash
-python download_model.py
-```
-
-**Option 2: Manual Download**
-
-Download the following files and place them in the project root directory:
-
-| File | Size | Description | Download Link |
-|------|------|-------------|---------------|
-| `best_model.pth` | 118 MB | Best checkpoint model | [Download](https://drive.google.com/file/d/1HfSb-zVBlxTf22YrheEVGbT7KjZHoe-C/view?usp=sharing) |
-| `vocab.pkl` | <1 MB | Vocabulary object | [Download](https://drive.google.com/file/d/13S6BM-Fc5uPCO-Tn1VJxxUnx3U0zFlHD/view?usp=sharing) |
-
-**After downloading, your project structure should look like:**
-```
-inverse-cooking/
-├── best_model.pth                ✅
-├── vocab.pkl                     ✅
-├── inverse-cooking.py
-├── download_model.py
-├── app.py
-├── requirements.txt
-└── README.md
-```
-
-### Alternative: Train Your Own Models
-
-If you prefer to train from scratch instead of using pre-trained weights, you can run the training script:
-```bash
-python inverse-cooking.py
-```
-
-Training takes approximately 1 hour on Tesla T4 GPU and use kaggle or colab for the T4 GPU.
-
----
-
-## 💻 Usage
-
-### Quick Inference
-
-```python
-from app import load_model, generate_recipe
-from PIL import Image
-
-# Load trained model and vocabulary
-model, vocab, device = load_model()
-
-# Generate recipe from image
-image = Image.open('your_image.jpg')
-recipe = generate_recipe(image, model, vocab, device)
-print(recipe)
+                                  [ Upload Food Image ]
+                                            │
+                                            ▼
+                             [ Qwen2.5-VL-7B Vision AI ]
+                                            │
+                                  Structured JSON Output
+                        (dish_name, cuisine, ingredients, confidence)
+                                            │
+                                            ▼
+                                 [ Matcher Engine ]
+                         (SequenceMatcher against recipes.json)
+                                     /             \
+                       Match Found  /               \  No Match
+                                   /                 \
+                                  ▼                   ▼
+                     [ Verified Chef Recipe ]     [ AI Generated Recipe ]
+                                  │
+                                  ▼
+                    [ Swiggy MCP Ordering Flow ]
+             OAuth 2.1 PKCE → Address → Restaurant → Dish Menu 
+             → Premium Add-on Match → Cart Cap Check → COD Order
 ```
 
 ---
 
-## 📈 Results
+## Key Features
 
-### Training Performance
-
-| Metric | Value |
-|--------|-------|
-| Best Validation Loss | 2.96 |
-| Training Time | ~1 hours (15 epochs on Tesla T4) |
-| Final Train Loss | 2.92 |
-| Model Parameters | 17.7M |
-
-### Sample Predictions
-
-**Example: Pizza**
-- **Generated**: "preheat oven to 450 degrees, roll out pizza dough spread tomato sauce add mozzarella cheese top with pepperoni bake for 15 minutes until cheese is melted and bubbly."
-- **Quality**: Coherent, logical sequence ✅
+- **Multimodal AI Vision**: Powered by `Qwen/Qwen2.5-VL-7B-Instruct` for zero-shot dish recognition and structured JSON extraction.
+- **Fuzzy Recipe Matching**: Intelligent matcher engine (`matcher_service.py`) pairs identified dishes with consented chef recipes based on configurable similarity thresholds.
+- **Swiggy MCP 7-Tool Pipeline**:
+  - `get_addresses`: Resolves user delivery address.
+  - `search_restaurants`: Locates target restaurant availability.
+  - `get_restaurant_menu` & `search_menu`: Fetches live menu and selects dish item.
+  - `find_best_addon_match`: Fuzzy matches chef-suggested premium ingredients to real Swiggy menu add-ons.
+  - `update_food_cart` & `get_food_cart`: Builds cart and verifies spending caps (₹1,000 max).
+  - `place_food_order`: Submits Cash on Delivery (COD) order.
+- **OAuth 2.1 + PKCE Auth**: Secure authentication with Swiggy MCP servers using local RFC 8414 metadata discovery and callback handlers.
+- **Chef Recipe Portal**: Dedicated page for chefs to upload verified recipes, set base pricing, define premium add-on costs, and toggle ordering consent.
+- **Modular Architecture**: Clean separation of core config, Pydantic DTO schemas, repository persistence patterns, services, REST endpoints, and UI views.
 
 ---
 
-## 🛠️ Technical Details
-
-### Hyperparameters
-
-```python
-BATCH_SIZE = 32
-LEARNING_RATE = 3e-4
-NUM_EPOCHS = 15
-EMBED_SIZE = 256
-NUM_HEADS = 4
-NUM_LAYERS = 2
-MAX_SEQ_LENGTH = 512
-```
-
-### Model Architecture Details
-
-```
-CNNEncoder(
-  (resnet): Sequential(...)
-  (linear): Linear(512 → 256)
-  (bn): BatchNorm1d(256)
-  (relu): ReLU()
-)
-
-TransformerDecoder(
-  (embedding): Embedding(8215, 256)
-  (positional_encoding): Parameter(512, 256)
-  (transformer_decoder): TransformerDecoder(2 layers)
-  (fc_out): Linear(256 → 8215)
-)
-
-Total Parameters: 17,761,623
-Trainable Parameters: 7,042,815
-```
-
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 inverse-cooking/
 ├── app/
+│   ├── api/
+│   │   └── v1/
+│   │       └── recipes.py           # FastAPI REST API endpoints
 │   ├── core/
-│   │   └── config.py              # Environment variables, paths, model IDs
-│   ├── services/
-│   │   ├── swiggy_auth.py         # OAuth 2.1 + PKCE authentication
-│   │   ├── swiggy_service.py      # Swiggy MCP ordering flow
-│   │   ├── vision_service.py      # Qwen Vision AI (dish identification)
-│   │   └── matcher_service.py     # Fuzzy match against chef recipes
-│   ├── storage/
-│   │   └── recipe_repo.py         # JSON persistence for chef recipes
-│   ├── api/v1/
-│   │   └── recipes.py             # FastAPI REST endpoints
+│   │   └── config.py                # Environment config, paths, model IDs
 │   ├── schemas/
-│   │   └── recipe.py              # Pydantic request/response models
-│   └── main.py                    # FastAPI server entry point
+│   │   └── recipe.py                # Pydantic request & response models
+│   ├── services/
+│   │   ├── matcher_service.py       # SequenceMatcher chef recipe lookup
+│   │   ├── swiggy_auth.py           # OAuth 2.1 + PKCE login flow
+│   │   ├── swiggy_service.py        # 7-tool Swiggy MCP ordering service
+│   │   └── vision_service.py        # Qwen2.5-VL Hugging Face Inference client
+│   ├── storage/
+│   │   └── recipe_repo.py           # Recipe JSON persistence repository
+│   └── main.py                      # FastAPI server entry point
 ├── ui/
-│   ├── main_app.py                # Streamlit home page (upload → identify → order)
+│   ├── main_app.py                  # Streamlit entry point (Home: Vision & Ordering)
 │   └── pages/
-│       └── 1_Chef_Portal.py       # Chef recipe management page
+│       └── 1_Chef_Portal.py         # Streamlit page (Chef Portal: Upload & Manage)
 ├── data/
-│   └── recipes.json               # Chef-uploaded verified recipes
-├── .env                           # HF_TOKEN (gitignored)
-├── requirements.txt               # Python dependencies
-└── readme.md                      # This file
+│   └── recipes.json                 # Verified chef recipes storage
+├── .env                             # Environment variables (HF_TOKEN) - gitignored
+├── .gitignore                       # Ignored build & environment files
+├── requirements.txt                 # Python dependencies
+└── readme.md                        # Documentation
 ```
 
 ---
 
-## 🔧 Requirements
+## Quick Start
 
+### 1. Prerequisites
+- Python 3.10+
+- Hugging Face API Token (with access to `Qwen/Qwen2.5-VL-7B-Instruct`)
+
+### 2. Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/WALKMAN303/inverse-cooking.git
+   cd inverse-cooking
+   ```
+
+2. **Create and activate a virtual environment**:
+   ```bash
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Linux/macOS:
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure environment variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   HF_TOKEN=your_huggingface_access_token_here
+   ```
+
+---
+
+## Running the Application
+
+### Streamlit Multipage Web App (Recommended)
+
+Run the unified Streamlit application:
+```bash
+streamlit run ui/main_app.py
 ```
-torch>=2.0.0
-torchvision>=0.15.0
-pandas>=1.5.0
+
+Access the app at `http://localhost:8501`. Use the sidebar to switch between:
+- **Home**: Upload food images, view AI dish recognition, and place Swiggy orders.
+- **Chef Portal**: Upload new chef-verified recipes, set premium add-ons, and manage customer visibility consent.
+
+---
+
+### FastAPI Server (Optional REST Endpoints)
+
+Start the REST API server:
+```bash
+uvicorn app.main:app --reload
+```
+
+Interactive API documentation will be available at:
+- Swagger UI: `http://127.0.0.1:8000/docs`
+- ReDoc: `http://127.0.0.1:8000/redoc`
+
+#### API Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Server health check |
+| `POST` | `/api/v1/recipes/analyze` | Returns dish name, cuisine, ingredients, and confidence from base64 image |
+| `POST` | `/api/v1/recipes/predict` | Generates detailed markdown cooking recipe from base64 image |
+
+---
+
+## Requirements
+
+```text
+streamlit>=1.32.0
 pillow>=9.0.0
-scikit-learn>=1.2.0
-matplotlib>=3.5.0
-kagglehub>=0.1.0
-gdown>=4.7.1
+huggingface_hub>=0.24.0
+python-dotenv>=1.0.0
+fastapi>=0.110.0
+uvicorn>=0.29.0
+pydantic>=2.6.0
+httpx>=0.27.0
+mcp>=1.0.0
 ```
+
+---
+
+## Security & Persistence Notes
+
+- `.env` contains your `HF_TOKEN` and is strictly gitignored. Never commit `.env`.
+- `.swiggy_token.json` stores local OAuth tokens and is gitignored.
+- `venv/` should never be distributed or committed to version control.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+

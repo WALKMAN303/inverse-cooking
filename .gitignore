@@ -3,3 +3,4 @@ venv
 __pycache__
 .swiggy_token.json
 *.pyc
+.pytest_cache

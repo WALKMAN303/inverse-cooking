@@ -15,7 +15,7 @@ RECIPES_FILE = DATA_DIR / "recipes.json"
 
 # HF / Vision Model Configuration
 HF_TOKEN = os.getenv("HF_TOKEN", "")
-VISION_MODEL_ID = "Qwen/Qwen2.5-VL-7B-Instruct"
+VISION_MODEL_ID = os.getenv("VISION_MODEL_ID", "Qwen/Qwen2.5-VL-72B-Instruct")
 
 # App Metadata
 APP_TITLE = "Inverse Cooking API"
